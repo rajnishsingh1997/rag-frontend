@@ -17,6 +17,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import * as z from "zod";
+import { loginApi } from "@/services/auth.service";
 
 
 
@@ -33,8 +34,17 @@ export function Login() {
     },
     mode: "onChange",
   });
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit(data: z.infer<typeof formSchema>) {
     console.log(data);
+    try {
+      const response = await loginApi(data);
+      if(response.status === 201|| response.status === 200){
+        console.log('inside')
+        localStorage.setItem("token", response.data.token);
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   }
   return (
     <Card className="w-full max-w-sm">
