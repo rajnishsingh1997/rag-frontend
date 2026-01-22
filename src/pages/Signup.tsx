@@ -18,6 +18,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import * as z from "zod";
 import { signupApi } from "@/services/auth.service";
+import userAuthStore from "@/store/auth.store";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
   const formSchema = z.object({
@@ -34,16 +37,23 @@ const Signup = () => {
     },
     mode: "onChange",
   });
+  const setUser = userAuthStore((state) => state.setUser);
+  const navigate = useNavigate();
   async function onSubmit(data: z.infer<typeof formSchema>) {
     console.log(data);
     try {
       const response = await signupApi(data);
       if (response.status === 201 || response.status === 200) {
-        console.log("inside");
+        setUser(response.data.user);
         localStorage.setItem("token", response.data.token);
+        toast.success("Account created successfully.");
+        navigate("/");
+        return;
       }
+      toast.error("Sign up failed. Please try again.");
     } catch (error) {
       console.error("sign up failed:", error);
+      toast.error("Sign up failed. Please try again.");
     }
   }
   return (

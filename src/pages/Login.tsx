@@ -18,8 +18,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import * as z from "zod";
 import { loginApi } from "@/services/auth.service";
-
-
+import userAuthStore from "@/store/auth.store";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export function Login() {
   const formSchema = z.object({
@@ -34,16 +35,24 @@ export function Login() {
     },
     mode: "onChange",
   });
+  const setUser = userAuthStore((state) => state.setUser);
+  const navigate = useNavigate();
+
   async function onSubmit(data: z.infer<typeof formSchema>) {
     console.log(data);
     try {
       const response = await loginApi(data);
-      if(response.status === 201|| response.status === 200){
-        console.log('inside')
+      if (response.status === 201 || response.status === 200) {
+        setUser(response.data.user);
         localStorage.setItem("token", response.data.token);
+        toast.success("Logged in successfully.");
+        navigate("/");
+        return;
       }
+      toast.error("Login failed. Please try again.");
     } catch (error) {
       console.error("Login failed:", error);
+      toast.error("Login failed. Please check your credentials.");
     }
   }
   return (

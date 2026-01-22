@@ -1,10 +1,12 @@
 import "./App.css";
-import Auth from "./pages/Auth";
+import AppRoutes from "./route";
+import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   return (
     <>
-      <Auth />
+      <AppRoutes />
+      <Toaster />
     </>
   );
 }
