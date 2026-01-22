@@ -39,7 +39,7 @@ export function Login() {
   const navigate = useNavigate();
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    console.log(data);
+    
     try {
       const response = await loginApi(data);
       if (response.status === 201 || response.status === 200) {
