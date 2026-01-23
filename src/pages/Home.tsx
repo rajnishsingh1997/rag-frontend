@@ -11,32 +11,24 @@ const Home = () => {
   const user = userAuthStore((state) => state.user);
   console.log("User in Home:", user);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>(
-    () => localStorage.getItem("lastPdfUrl") || ""
-  );
-  const [previewName, setPreviewName] = useState<string>(
-    () => localStorage.getItem("lastPdfName") || ""
-  );
   const [uploadStatus, setUploadStatus] = useState<
     "IDLE" | "UPLOADING" | "PROCESSING" | "READY" | "FAILED"
   >("IDLE");
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
-  const isReadingPdf = Boolean(selectedFile || previewUrl);
+  const isReadingPdf = Boolean(selectedFile);
   const isBusy = uploadStatus === "UPLOADING" || uploadStatus === "PROCESSING";
   const pdfUrl = useMemo(() => {
     if (!selectedFile) return "";
     return URL.createObjectURL(selectedFile);
   }, [selectedFile]);
-  const activePdfUrl = selectedFile ? pdfUrl : previewUrl;
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     if (!file) return;
     if (isBusy) return;
     setSelectedFile(file);
-    setPreviewName(file.name);
     setMessages([]);
     if (!user?._id) {
       toast.error("Missing user id. Please login again.");
@@ -51,12 +43,6 @@ const Home = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       const documentId = uploadResponse?.data?.documentId;
-      const fileUrl = uploadResponse?.data?.fileUrl;
-      if (fileUrl) {
-        setPreviewUrl(fileUrl);
-        localStorage.setItem("lastPdfUrl", fileUrl);
-        localStorage.setItem("lastPdfName", file.name);
-      }
       if (!documentId) {
         setUploadStatus("FAILED");
         toast.error("Upload failed. Missing document id.");
@@ -133,9 +119,7 @@ const Home = () => {
                 <div>
                   <p className="text-sm font-medium">Uploaded PDF</p>
                   <p className="text-xs text-muted-foreground">
-                    {selectedFile
-                      ? selectedFile.name
-                      : previewName || "No file selected"}
+                    {selectedFile ? selectedFile.name : "No file selected"}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -148,10 +132,10 @@ const Home = () => {
                 </div>
               </div>
               <div className="h-[45vh] overflow-y-auto px-4 py-4 sm:h-[52vh] lg:h-[62vh]">
-                {activePdfUrl ? (
+                {selectedFile ? (
                   <div className="rounded-xl border border-border/60 bg-background p-2 shadow-sm">
                     <object
-                      data={activePdfUrl}
+                      data={pdfUrl}
                       type="application/pdf"
                       className="h-[38vh] w-full rounded-lg sm:h-[46vh] lg:h-[56vh]"
                     >
