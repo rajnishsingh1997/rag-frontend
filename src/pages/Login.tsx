@@ -39,10 +39,12 @@ export function Login() {
   const navigate = useNavigate();
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    
     try {
       const response = await loginApi(data);
-      if (response.status === 201 || response.status === 200) {
+      console.log("Login API response:", response);
+      if (response.data.error) return;
+      if (response.data.message=== "Login successful") {
+        console.log("Login response data:", response.data);
         setUser(response.data.user);
         localStorage.setItem("token", response.data.token);
         toast.success("Logged in successfully.");
